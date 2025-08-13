@@ -1,0 +1,95 @@
+'use client';
+import React from 'react';
+import { Beer, Sparkles, ShieldAlert, Zap, UserPlus } from 'lucide-react';
+
+type Mode = 'realistic' | 'animated';
+
+export default function Generator(){
+  const [topic, setTopic]   = React.useState('Is cancel culture real or just internet hangovers?');
+  const [mode, setMode]     = React.useState<Mode>('animated');
+  const [chaos, setChaos]   = React.useState('');
+  const [length, setLength] = React.useState('60-90s');
+  const [generating, setGenerating] = React.useState(false);
+  const [script, setScript] = React.useState<string>('');
+  const [status, setStatus] = React.useState<string>('Ready.');
+
+  async function handleGenerate(){
+    setGenerating(true); setStatus('Writing bar-talk script...');
+    try{
+      const res = await fetch('/api/generate', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ topic, mode, chaos, length })
+      });
+      const data = await res.json();
+      setScript(data.script || 'No script returned');
+      setStatus('Script ready. (Stub preview — wire providers to render audio/video)');
+    }catch(e){ console.error(e); setStatus('Error generating.'); }
+    finally{ setGenerating(false); }
+  }
+
+  function Surprise(){
+    const seeds = [
+      'Top 3 worst conspiracy theories at the bar',
+      'Aliens vs. Beer: which built the pyramids?',
+      'Is the algorithm gaslighting us?',
+      'Should Bigfoot have a podcast?',
+      'Draft vs. canned: the real culture war'
+    ];
+    setTopic(seeds[Math.floor(Math.random()*seeds.length)]);
+  }
+
+  return (
+    <div className="card">
+      <div className="controls">
+        <div className="row" style={{alignItems:'center', justifyContent:'space-between'}}>
+          <div style={{display:'flex', gap:10, alignItems:'center'}}>
+            <Beer size={18} color="#F9B233"/><b>Buncha Beers Generator</b>
+          </div>
+          <span className="badge"><ShieldAlert size={14} style={{marginRight:6}}/> Private</span>
+        </div>
+
+        <label>Topic</label>
+        <textarea className="textarea" value={topic} onChange={e=>setTopic(e.target.value)} placeholder="Type your hot take..."/>
+
+        <div className="row">
+          <div className="toggle" role="tablist" aria-label="Mode">
+            <button className={mode==='animated'?'active':''} onClick={()=>setMode('animated')}>Animated</button>
+            <button className={mode==='realistic'?'active':''} onClick={()=>setMode('realistic')}>Realistic</button>
+          </div>
+          <select className="select" value={length} onChange={e=>setLength(e.target.value)}>
+            <option>30–45s</option><option>60-90s</option>
+          </select>
+          <button className="button secondary" type="button" onClick={Surprise}><Sparkles size={16}/> Surprise me</button>
+        </div>
+
+        <label>Optional chaos (e.g., “asteroid hits at the end”)</label>
+        <input className="input" value={chaos} onChange={e=>setChaos(e.target.value)} placeholder="Describe a weird twist to include…"/>
+
+        <div className="grid">
+          <div className="preview">
+            <div style={{textAlign:'center'}}>
+              <div className="neon" style={{fontSize:18, marginBottom:6}}>BunchaBeersPod</div>
+              <div style={{opacity:0.8}}>Preview area (toggle Animated / Realistic)</div>
+            </div>
+          </div>
+          <div>
+            <div className="card" style={{background:'transparent', border:'1px dashed #2b2b31'}}>
+              <b>Output (script)</b>
+              <pre style={{whiteSpace:'pre-wrap', marginTop:8}}>{script || 'Your generated script will appear here.'}</pre>
+            </div>
+            <div className="row" style={{marginTop:12, justifyContent:'space-between'}}>
+              <span style={{color:'#a3a3ac'}}>{status}</span>
+              <button className="button" disabled={generating} onClick={handleGenerate}>
+                <Zap size={16} style={{marginRight:6}}/> {generating? 'Generating…' : 'Generate'}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="footer">
+          Guests coming soon <UserPlus size={12}/> • Chaos FX in Phase 3 • Long-form in Phase 4
+        </div>
+      </div>
+    </div>
+  );
+}
