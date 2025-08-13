@@ -1,0 +1,14 @@
+import type { NextApiRequest, NextApiResponse } from 'next';
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const { topic, mode, chaos, length } = req.body || {};
+  const lines = [
+    `Chad: Bro… ${topic || 'beer talk'} literally tastes like freedom and bad decisions.`,
+    `Ronnie: You can’t just say that, Chad. There’s data. Somewhere.`,
+    `Chad: Pretty sure I saw it on a coaster.`,
+    chaos ? `*Chaos Trigger*: ${chaos}` : `*Button taps, neon sign buzzes*`,
+    `Ronnie: Anyway, ${mode==='realistic'?'why does your face look so human today?':'why are we cartoons again?'}`,
+    `Narrator: End of ${length || '60-90s'} preview. Post it.`
+  ];
+  res.status(200).json({ script: lines.join('\n') });
+}
